@@ -1,0 +1,52 @@
+name: Build and deploy to cPanel
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: CPANEL01
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: bubble-sort-visualizer
+
+      - name: Build app
+        run: npm run build --if-present
+        working-directory: bubble-sort-visualizer
+
+      - name: Show build output (debug)
+        run: |
+          echo "Contents of build/":
+          ls -la bubble-sort-visualizer/build || true
+
+      - name: Deploy to cPanel via FTP/FTPS
+        uses: SamKirkland/ftp-deploy-action@v4.3.0
+        with:
+          server: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          password: ${{ secrets.CPANEL_PASSWORD }}
+          # Optional: set a port secret (default 21)
+          port: ${{ secrets.CPANEL_PORT }}
+          local-dir: bubble-sort-visualizer/build/
+          server-dir: ${{ vars.CPANEL_TARGET_DIR }}
+          protocol: ftps
+
+# Required repository secrets:
+# - CPANEL_HOST        (hostname or IP of your cPanel server)
+# - CPANEL_USERNAME    (FTP username)
+# - CPANEL_PASSWORD    (FTP password)
+# - CPANEL_TARGET_DIR  (target directory on the server, e.g. /public_html)
+# Optional secret:
+# - CPANEL_PORT        (FTP port, default 21)
