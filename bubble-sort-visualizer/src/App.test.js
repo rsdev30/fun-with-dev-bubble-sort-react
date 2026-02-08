@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import App from './App';
 import '@testing-library/jest-dom';
 
@@ -53,5 +53,33 @@ describe('App Component', () => {
         fireEvent.click(screen.getByRole('button', { name: /Start/i }));
         fireEvent.click(screen.getByRole('button', { name: /Pause/i }));
         expect(screen.getByRole('button', { name: /Resume/i })).toBeInTheDocument();
+    });
+
+    test('elapsed time displays and updates while playing, pauses and resets', () => {
+        jest.useFakeTimers();
+        try {
+            render(<App />);
+
+            // initial
+            expect(screen.getByText(/Elapsed:/i)).toHaveTextContent('Elapsed: 00:00');
+
+            // start and advance 2.5 seconds -> should show 00:02
+            fireEvent.click(screen.getByRole('button', { name: /Start/i }));
+            act(() => {
+                jest.advanceTimersByTime(2500);
+            });
+            expect(screen.getByText(/Elapsed:/i)).toHaveTextContent('Elapsed: 00:02');
+
+            act(() => {
+                jest.advanceTimersByTime(3000);
+            });
+            expect(screen.getByText(/Elapsed:/i)).toHaveTextContent('Elapsed: 00:02');
+
+            // reset -> back to 00:00
+            fireEvent.click(screen.getByRole('button', { name: /Reset/i }));
+            expect(screen.getByText(/Elapsed:/i)).toHaveTextContent('Elapsed: 00:00');
+        } finally {
+            jest.useRealTimers();
+        }
     });
 });
