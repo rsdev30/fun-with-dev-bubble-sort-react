@@ -1,21 +1,21 @@
 import './App.css';
 import React, { useState, useEffect, useRef } from 'react';
-import { bubbleSort } from './Utils/BubbleSort';
+import bubbleSortGen from 'fun-with-dev-js-common/Utils/BubbleSortGen';
 
 function App() {
   const initialArray = [8, 3, 5, 4, 6, 2, 7, 1];
-
   const [state, setState] = useState({ array: initialArray, comparing: null, swapped: null, done: false });
-
+  
   const [isPlaying, setIsPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0); // seconds
 
   const generatorRef = useRef(null);
   const intervalRef = useRef(null);
   const timerRef = useRef(null);
+  
 
   const start = () => {
-    if (!generatorRef.current) generatorRef.current = bubbleSort(state.array);
+    if (!generatorRef.current) generatorRef.current = bubbleSortGen(state.array);
     setIsPlaying(true);
   }
 
@@ -124,5 +124,4 @@ function App() {
     </div>
   );
 }
-
 export default App;
